@@ -1,0 +1,44 @@
+# ============================================================================
+# SO-101  —  ros2_control CONTROLLER MANAGER
+# ============================================================================
+# The ros2_control side of execution. MoveIt's controllers (moveit_controllers.yaml)
+# send goals to the controllers DEFINED here, which in turn drive the hardware
+# interface declared in so101_new_calib.ros2_control.xacro (a mock/fake system
+# for sim, or the real Feetech bus on hardware). Shared between exact & approx.
+#
+# Three controllers are spawned:
+#   * soarmcontroller        -> JointTrajectoryController (the 5 arm joints)
+#   * sogrippercontroller    -> GripperActionController   (the gripper)
+#   * joint_state_broadcaster -> publishes /joint_states from the hardware
+controller_manager:
+  ros__parameters:
+    update_rate: 100  # Hz — control loop rate
+
+    soarmcontroller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+    sogrippercontroller:
+      type: position_controllers/GripperActionController
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+# ---- ARM trajectory controller: which joints + which interfaces ----
+soarmcontroller:
+  ros__parameters:
+    joints:
+      - shoulder_pan
+      - shoulder_lift
+      - elbow_flex
+      - wrist_flex
+      - wrist_roll
+    command_interfaces:
+      - position          # we command joint POSITIONS (not vel/effort)
+    state_interfaces:
+      - position          # and read back position...
+      - velocity          # ...and velocity for feedback
+
+# ---- GRIPPER controller: single joint ----
+sogrippercontroller:
+  ros__parameters:
+    joint: gripper

@@ -1,0 +1,12 @@
+# ============================================================================
+# SO-101  —  PILZ INDUSTRIAL MOTION PLANNER  CARTESIAN LIMITS
+# ============================================================================
+# Used only when planning with the Pilz Industrial Motion Planner (PTP/LIN/CIRC
+# straight-line & circular Cartesian motions), not by OMPL. Caps the
+# end-effector's translational and rotational speed/accel during LIN/CIRC moves.
+# Shared, identical, between the exact and approx packages.
+cartesian_limits:
+  max_trans_vel: 1.0    # m/s   — max end-effector linear velocity
+  max_trans_acc: 2.25   # m/s^2 — max end-effector linear acceleration
+  max_trans_dec: -5.0   # m/s^2 — max linear deceleration (negative = braking)
+  max_rot_vel: 1.57     # rad/s — max end-effector angular velocity (~90 deg/s)

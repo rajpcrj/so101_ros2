@@ -1,0 +1,61 @@
+# ============================================================================
+# SO-101  —  INVERSE KINEMATICS SOLVER CONFIG  (APPROXIMATE IK)
+# ============================================================================
+# Package : so101_moveit_config_ik_approx   (the APPROXIMATE-IK MoveIt 2 config)
+# Group   : soArm  (5 arm joints: shoulder_pan, shoulder_lift, elbow_flex,
+#                   wrist_flex, wrist_roll;  base_link -> tip wrist_link)
+#
+# Sibling of so101_moveit_config (exact KDL). Same robot, same group, same
+# controllers/limits — the ONLY difference between the two packages is THIS
+# file. move_group exposes this solver on /compute_ik & /compute_fk, which
+# scripts/ik_fk_services_approx.py re-exports as /compute_ik_so_approx and
+# /compute_fk_so_approx (and forces avoid_collisions=False + a 0.05 s timeout
+# on every request).
+#
+# ----------------------------------------------------------------------------
+# SOLVER: pick_ik  (optimization-based, gradient + local search)
+# ----------------------------------------------------------------------------
+# pick_ik/PickIkPlugin minimises a cost over joint space and will return its
+# BEST candidate even if it does not perfectly hit the target — i.e. an
+# APPROXIMATE solution. Properties:
+#   * Tolerant   — accepts a solution within position/orientation thresholds
+#                  (below), so it succeeds on poses the 5-DOF arm can only get
+#                  "close" to, where exact KDL would fail outright.
+#   * Robust     — multiple restart attempts escape local minima.
+#   * Faster-to-an-answer in practice for the LLM-agent loop, at the cost of
+#                  some end-effector error.
+#
+# WHEN TO USE: coarse reaching / "get the gripper roughly there" — the agent
+# layer (AIRDS so101_compute_ik_approx) and any move where always returning a
+# usable joint solution matters more than sub-mm accuracy.
+#
+#   exact (KDL)                vs   approximate (pick_ik, this file)
+#   ----------------------------    --------------------------------
+#   hits pose or FAILS              returns nearest reachable (within tol)
+#   full 6-DOF, no slack            5cm / ~6deg slack allowed
+#   collision-checked (proxy on)    proxy forces avoid_collisions=False
+#   5 ms budget                     50 ms budget, 3 attempts
+#   final approach / grasp          coarse reach / agent autonomy
+# ----------------------------------------------------------------------------
+soArm:
+  # IK plugin loaded by move_group for the `soArm` group.
+  kinematics_solver: pick_ik/PickIkPlugin
+
+  # Wall-clock budget (seconds) per IK call. 10x the exact config's 0.005 s —
+  # pick_ik runs an optimisation with restarts and needs the extra time.
+  kinematics_solver_timeout: 0.05
+
+  # Number of independent solve attempts (random restarts) before giving up.
+  # More attempts = better chance of escaping a local minimum on this 5-DOF arm.
+  kinematics_solver_attempts: 3
+
+  # ---- APPROXIMATE-solution acceptance thresholds --------------------------
+  # A candidate counts as "good enough" (success) if it lands within these of
+  # the requested pose. This is what makes the solver "approximate".
+
+  # Max allowed end-effector POSITION error to accept a solution: 0.05 m = 5 cm.
+  approximate_solution_position_threshold: 0.05   # 5cm
+
+  # Max allowed ORIENTATION error (radians) to accept a solution:
+  # 0.1 rad ~= 5.7 deg.
+  approximate_solution_orientation_threshold: 0.1  # ~6 degrees

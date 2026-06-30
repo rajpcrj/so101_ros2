@@ -1,0 +1,58 @@
+# ============================================================================
+# SO-101  —  JOINT LIMITS  (MoveIt 2 dynamics overrides)
+# ============================================================================
+# joint_limits.yaml augments/overrides the velocity & acceleration limits that
+# MoveIt reads from the URDF. Position limits stay in the URDF
+# (so101_new_calib.urdf). This file is SHARED, identical, between the exact
+# (so101_moveit_config) and approximate (so101_moveit_config_ik_approx)
+# packages — the two differ only in kinematics.yaml.
+#
+# The two scaling factors below cap EVERY motion to a fraction of the
+# per-joint max, unless a motion request overrides them (any value <= 1.0).
+# Raise toward 1.0 to move faster.
+default_velocity_scaling_factor: 0.1      # plan at 10% of max joint velocity
+default_acceleration_scaling_factor: 0.1  # plan at 10% of max joint accel
+
+# Per-joint overrides. Keys: [max_position, min_position, max_velocity,
+# max_acceleration]. Toggle with [has_velocity_limits, has_acceleration_limits].
+#
+# NOTE on the SO-101 here:
+#   * 5 ARM joints are planned by MoveIt (group `soArm`): shoulder_pan,
+#     shoulder_lift, elbow_flex, wrist_flex, wrist_roll.
+#   * `gripper` is listed for completeness but is driven by the separate
+#     GripperCommand controller, not the arm trajectory.
+#   * Acceleration limits are DISABLED (has_acceleration_limits: false) — time
+#     parameterisation relies on velocity limits + the scaling factor only.
+#   * max_velocity: 10.0 rad/s is the raw cap; the 0.1 scaling factor above
+#     means planned motions actually run at ~1.0 rad/s unless overridden.
+joint_limits:
+  elbow_flex:
+    has_velocity_limits: true
+    max_velocity: 10.0
+    has_acceleration_limits: false
+    max_acceleration: 0.0
+  gripper:
+    has_velocity_limits: true
+    max_velocity: 10.0
+    has_acceleration_limits: false
+    max_acceleration: 0.0
+  shoulder_lift:
+    has_velocity_limits: true
+    max_velocity: 10.0
+    has_acceleration_limits: false
+    max_acceleration: 0.0
+  shoulder_pan:
+    has_velocity_limits: true
+    max_velocity: 10.0
+    has_acceleration_limits: false
+    max_acceleration: 0.0
+  wrist_flex:
+    has_velocity_limits: true
+    max_velocity: 10.0
+    has_acceleration_limits: false
+    max_acceleration: 0.0
+  wrist_roll:
+    has_velocity_limits: true
+    max_velocity: 10.0
+    has_acceleration_limits: false
+    max_acceleration: 0.0

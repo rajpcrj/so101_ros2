@@ -1,0 +1,38 @@
+# ============================================================================
+# SO-101  —  MoveIt CONTROLLER INTERFACE
+# ============================================================================
+# Tells MoveIt how to HAND OFF a planned trajectory to ros2_control. MoveIt
+# plans the path; these controllers execute it on the hardware/sim. Shared,
+# identical, between the exact and approx packages.
+#
+# Two controllers, matching the two controller managers in ros2_controllers.yaml:
+#   * soarmcontroller     -> the 5 arm joints, via a FollowJointTrajectory
+#                            action (the standard MoveIt execution interface).
+#   * sogrippercontroller -> the gripper, via a GripperCommand action
+#                            (open/close, separate from the arm trajectory).
+moveit_controller_manager: moveit_simple_controller_manager/MoveItSimpleControllerManager
+
+moveit_simple_controller_manager:
+  controller_names:
+    - soarmcontroller       # arm (FollowJointTrajectory)
+    - sogrippercontroller   # gripper (GripperCommand)
+
+  # ---- ARM: trajectory execution for the soArm planning group ----
+  soarmcontroller:
+    type: FollowJointTrajectory
+    joints:
+      - shoulder_pan
+      - shoulder_lift
+      - elbow_flex
+      - wrist_flex
+      - wrist_roll
+    action_ns: follow_joint_trajectory   # action server namespace MoveIt calls
+    default: true
+
+  # ---- GRIPPER: single-DOF open/close ----
+  sogrippercontroller:
+    type: GripperCommand
+    joints:
+      - gripper
+    action_ns: gripper_cmd
+    default: true

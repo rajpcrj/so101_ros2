@@ -1,0 +1,47 @@
+# ============================================================================
+# SO-101  —  INVERSE KINEMATICS SOLVER CONFIG  (EXACT IK)
+# ============================================================================
+# Package : so101_moveit_config            (the EXACT-IK MoveIt 2 config)
+# Group   : soArm  (5 arm joints: shoulder_pan, shoulder_lift, elbow_flex,
+#                   wrist_flex, wrist_roll;  base_link -> tip wrist_link)
+#
+# This file tells MoveIt 2 which IK plugin move_group loads for the `soArm`
+# planning group. move_group then exposes it on the /compute_ik and
+# /compute_fk services (re-exported as /compute_ik_so & /compute_fk_so by
+# scripts/ik_fk_services.py).
+#
+# ----------------------------------------------------------------------------
+# SOLVER: KDL (Orocos Kinematics & Dynamics Library)
+# ----------------------------------------------------------------------------
+# kdl_kinematics_plugin/KDLKinematicsPlugin is a NUMERIC, iterative
+# Newton-Raphson solver. It is the MoveIt default. Properties:
+#   * EXACT      — returns a solution only if it converges to the requested
+#                  pose within tolerance; otherwise it reports FAILURE
+#                  (it never returns a "close enough" answer).
+#   * Full 6-DOF — constrains BOTH the position and the orientation of
+#                  wrist_link.
+#   * Seeded     — starts from the current joint state, so it can stall in a
+#                  local minimum. The SO-101 arm is only 5-DOF, so an arbitrary
+#                  6-DOF target (position + full orientation) is often simply
+#                  unreachable and KDL will (correctly) fail.
+#
+# WHEN TO USE: precise moves — final approach, grasp alignment, anything where
+# hitting the pose accurately matters more than always getting an answer.
+# For coarse / always-succeeds reaching, use the sibling package
+# so101_moveit_config_ik_approx (pick_ik, tolerant). The exact-vs-approx
+# trade-off table is documented in that package's kinematics.yaml.
+# ----------------------------------------------------------------------------
+soArm:
+  # IK plugin loaded by move_group for the `soArm` group.
+  kinematics_solver: kdl_kinematics_plugin/KDLKinematicsPlugin
+
+  # Joint-space step (radians) used when discretising the search.
+  # Smaller = finer search / more accurate / slightly slower.
+  # 0.005 rad ~= 0.29 deg.
+  kinematics_solver_search_resolution: 0.005
+
+  # Wall-clock budget (seconds) for ONE IK call. If KDL has not converged
+  # within 0.005 s (5 ms) it returns failure. Kept short on purpose: exact IK
+  # should snap quickly or be reported unreachable — no point grinding toward
+  # a pose a 5-DOF arm cannot reach.
+  kinematics_solver_timeout: 0.005

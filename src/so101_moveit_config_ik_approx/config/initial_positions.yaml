@@ -1,0 +1,14 @@
+# ============================================================================
+# SO-101  —  INITIAL JOINT POSITIONS  (ros2_control fake/mock system)
+# ============================================================================
+# Home configuration the mock hardware (so101_new_calib.ros2_control.xacro,
+# mock_components/GenericSystem) starts at in simulation. All joints at 0 rad
+# = the calibrated zero pose. On REAL hardware the Feetech driver provides the
+# actual start state instead. Shared between exact & approx packages.
+initial_positions:
+  elbow_flex: 0
+  gripper: 0
+  shoulder_lift: 0
+  shoulder_pan: 0
+  wrist_flex: 0
+  wrist_roll: 0
